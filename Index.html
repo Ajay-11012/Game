@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Arcade Nexus | Classic Games Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* Prevents accidental text selection while clicking game cards */
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 20% 40%, rgba(88, 130, 255, 0.08) 2%, transparent 2.5%),
+                              radial-gradient(circle at 75% 85%, rgba(255, 120, 200, 0.06) 1.8%, transparent 2%);
+            background-size: 55px 55px, 70px 70px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* main container */
+        .hub-container {
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(2px);
+        }
+
+        /* header with neon glow */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeSlideDown 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .hero h1 {
+            font-size: 3.6rem;
+            background: linear-gradient(135deg, #E6EEFF, #A0C0FF, #C084FC);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-weight: 700;
+        }
+
+        .hero p {
+            color: #8e9ac0;
+            margin-top: 0.7rem;
+            font-weight: 500;
+            font-size: 1.1rem;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            animation: fadeUp 1s ease 0.15s both;
+        }
+
+        .glow-line {
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #a855f7, #ec489a);
+            margin: 0.9rem auto 0;
+            border-radius: 4px;
+            animation: pulseWidth 2.2s infinite ease-in-out, glowFade 3.2s infinite ease-in-out;
+        }
+
+        /* game grid */
+        .games-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2.2rem;
+            margin-top: 1rem;
+        }
+
+        /* game card styling - 3D glassmorphism */
+
+        .game-card {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 360px;
+            background: rgba(20, 28, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(110, 140, 220, 0.35);
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.05) inset;
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            overflow: hidden;
+            cursor: pointer;
+            transform: translateY(0);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 2.5rem;
+            background: radial-gradient(circle at top, rgba(96, 165, 250, 0.18), transparent 34%);
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.92);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-12px);
+            border-color: rgba(130, 180, 255, 0.7);
+            box-shadow: 0 32px 55px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            background: rgba(28, 38, 58, 0.8);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* card inner */
+        .card-preview {
+            padding: 1.8rem 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 0 8px rgba(100, 150, 255, 0.6));
+            margin-bottom: 0.8rem;
+            transition: transform 0.25s;
+        }
+
+        .game-card:hover .game-icon {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        .game-title {
+            font-size: 1.95rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #F0F3FF, #C7D9FF);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .game-title:hover,
+        .game-card:hover .game-title {
+            transform: translateY(-2px);
+        }
+
+        .game-desc {
+            font-size: 0.85rem;
+            color: #9aa9ce;
+            margin-bottom: 1.6rem;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
+        }
+
+        .game-card:hover .game-desc {
+            color: #d8e6ff;
+        }
+
+        .status-badge {
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 60px;
+            padding: 0.35rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #aac8ff;
+            border: 0.5px solid rgba(59, 130, 246, 0.6);
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+        }
+
+        .game-card:hover .status-badge {
+            background: rgba(59, 130, 246, 0.4);
+            color: white;
+            letter-spacing: 0.3px;
+        }
+
+        .other-games {
+            margin-top: 2.5rem;
+            text-align: center;
+            color: #c3d0ff;
+        }
+
+        .other-games p {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: #9aa9ce;
+        }
+
+        .other-games-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .other-games a {
+            display: inline-block;
+            padding: 0.9rem 1.3rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #eef2ff;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.18), rgba(59, 130, 246, 0.14));
+            background-size: 200% 200%;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            transition: transform 0.3s ease, background-position 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .other-games a:hover {
+            transform: translateY(-2px);
+            background-position: 100% 0;
+            border-color: rgba(96, 165, 250, 0.65);
+            box-shadow: 0 14px 30px rgba(59, 130, 246, 0.18);
+        }
+
+        /* GAME PLACEHOLDER AREA - MODAL STYLE */
+        .game-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 18, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.3s ease;
+            font-family: 'Poppins', monospace;
+        }
+
+        .game-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 700px;
+            background: linear-gradient(145deg, #111827, #0f1422);
+            border-radius: 2.8rem;
+            border: 1px solid rgba(98, 156, 255, 0.5);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.3);
+        }
+
+        .game-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.8rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(145deg, #D9E6FF, #B77CFF);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .close-modal {
+            background: rgba(255, 80, 80, 0.2);
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #ffb4a2;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            backdrop-filter: blur(4px);
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 70, 70, 0.7);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .game-embed {
+            padding: 2rem 1.5rem 2rem;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.6rem;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .placeholder-message {
+            background: rgba(15, 25, 45, 0.7);
+            border-radius: 2rem;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-left: 6px solid #3b82f6;
+            backdrop-filter: blur(8px);
+            width: 100%;
+        }
+
+        .placeholder-message p {
+            color: #cbd5f0;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .code-note {
+            background: #0a0f1c;
+            padding: 0.8rem;
+            border-radius: 1.2rem;
+            font-family: 'Fira Code', monospace;
+            color: #b9e0ff;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+
+        .game-integration-hint {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #ffd966;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+        }
+
+        /* floating decoration */
+        .floating-shape {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #3b82f622, transparent);
+            border-radius: 50%;
+            filter: blur(45px);
+            z-index: 0;
+            pointer-events: none;
+            animation: floatShape 12s infinite alternate;
+        }
+
+        @keyframes floatShape {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+            100% { transform: translate(-30px, -40px) scale(1.2); opacity: 0.7; }
+        }
+
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-28px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseWidth {
+            0% { width: 80px; opacity: 0.6; }
+            50% { width: 160px; opacity: 1; }
+            100% { width: 80px; opacity: 0.6; }
+        }
+
+        @keyframes glowFade {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 0.45; }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes hubPop {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* responsive */
+        @media (max-width: 760px) {
+            body { padding: 1rem; }
+            .hero h1 { font-size: 2.3rem; }
+            .game-card { min-width: 260px; }
+            .modal-content { width: 95%; }
+            .game-embed { padding: 1.2rem; }
+        }
+
+        /* additional subtle animation for cards */
+        @keyframes cardEnter {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .game-card {
+            animation: cardEnter 0.6s ease backwards;
+        }
+        .game-card:nth-child(1) { animation-delay: 0.1s; }
+        .game-card:nth-child(2) { animation-delay: 0.2s; }
+        .game-card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* Scrollbar glow */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c3e66;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="floating-shape"></div>
+<div class="hub-container">
+    <div class="hero">
+        <h1>✦ ARCADE NEXUS ✦</h1>
+        <div class="glow-line"></div>
+        <p>classic trio · modern aura · your playground</p>
+    </div>
+
+    <div class="games-grid">
+        <!-- Tic-Tac-Toe (AI) card -->
+        <div class="game-card" data-game="tictactoe">
+            <div class="card-preview">
+                <div class="game-icon">🎮❌⭕</div>
+                <div class="game-title">Tic Tac Toe</div>
+                <div class="game-desc">Smart AI opponent · unbeatable mode · minimalist strategy</div>
+                <div class="status-badge">✨ AI READY · PLACEHOLDER</div>
+            </div>
+        </div>
+
+        <!-- Tetris Card -->
+        <div class="game-card" data-game="tetris">
+            <div class="card-preview">
+                <div class="game-icon">🧩🔷🔶</div>
+                <div class="game-title">TETRIS</div>
+                <div class="game-desc">Stack & clear lines · classic block puzzle · endless challenge</div>
+                <div class="status-badge">🧩 PLACEHOLDER · COMING</div>
+            </div>
+        </div>
+
+        <!-- Snake Game Card -->
+        <div class="game-card" data-game="snake">
+            <div class="card-preview">
+                <div class="game-icon">🐍🍎</div>
+                <div class="game-title">SNAKE</div>
+                <div class="game-desc">Grow longer, avoid walls · retro arcade sensation</div>
+                <div class="status-badge">🐍 PLACEHOLDER · READY</div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 3rem; opacity: 0.7;">
+        <span style="color:#90a6d4; font-size: 0.8rem;">✨ click any card to explore — game integration area prepared ✨</span>
+    </div>
+    <div class="other-games">
+        <p>Or open a game directly:</p>
+        <div class="other-games-links">
+            <a href="tic Tok Tic.html">Tic Tac Toe</a>
+            <a href="Tetris.html">TETRIS</a>
+            <a href="snake.html">Snake</a>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL STRUCTURE (Unified for all games) -->
+<div id="gameModal" class="game-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalGameTitle">Game Name</h2>
+            <button class="close-modal" id="closeModalBtn">✕</button>
+        </div>
+        <div class="game-embed" id="gameEmbedArea">
+            <!-- Placeholder content will be injected dynamically -->
+            <div class="placeholder-message">
+                <p>🎮 <strong>Game integration zone</strong> 🎮</p>
+                <p>You will add your full JavaScript game logic here.<br>
+                HTML/CSS/JS canvas or DOM implementation ready to embed.</p>
+                <div class="code-note">
+                    📁 ./games/{game}.js — perfect spot for your masterpiece
+                </div>
+                <div class="game-integration-hint">
+                    ⚡ Hint: Replace the inner HTML of this container with your game canvas & scripts.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---- Game Placeholders & future integration ----
+    // Each game will have a dedicated placeholder structure, but you can fully replace them later.
+    // We'll build a clean template for each game: shows interactive hint & architecture ready.
+    
+    const modal = document.getElementById('gameModal');
+    const modalTitle = document.getElementById('modalGameTitle');
+    const gameEmbedArea = document.getElementById('gameEmbedArea');
+    const closeBtn = document.getElementById('closeModalBtn');
+    
+    // Helper to clear and load a specific game placeholder template
+    function loadGameTemplate(gameId) {
+        // Clear embed area fully
+        gameEmbedArea.innerHTML = '';
+        
+        // Create a container that will hold future game implantation
+        const gameContainer = document.createElement('div');
+        gameContainer.id = `game-${gameId}-container`;
+        gameContainer.style.width = '100%';
+        gameContainer.style.display = 'flex';
+        gameContainer.style.flexDirection = 'column';
+        gameContainer.style.alignItems = 'center';
+        gameContainer.style.justifyContent = 'center';
+        gameContainer.style.gap = '1.5rem';
+        
+        // ---- Different placeholder designs with expansion notes ----
+        if (gameId === 'tictactoe') {
+            modalTitle.innerText = '❌ Tic Tac Toe · AI Edition ❌';
+            gameContainer.innerHTML = `
+                <div class="placeholder-message" style="max-width: 100%;">
+                    <p>🧠 <strong>AI-Powered Tic Tac Toe Placeholder</strong> 🧠</p>
+                    <p>Your intelligent opponent (MiniMax or simple AI) will live here.<br>
+                    Board: 3x3 grid, smart moves, unbeatable mode.</p>
+                    <div class="code-note" style="margin-top: 12px;">
+                        // Insert game logic: board state, AI decision, win detection.<br>
+                        // Recommended: Canvas or dynamic DOM grid. <br>
+                        // 'data-game="tictactoe"' slot ready for full capabilities.
+                    </div>
+                    <div style="margin-top: 20px; background: #1e293b; border-radius: 1.5rem; padding: 1rem;">
+                        ⚡ <strong>Integration demo board preview</strong> ⚡<br>
+                        <div style="display: inline-grid; grid-template-columns: repeat(3, 70px); gap: 8px; margin-top: 14px;">
+                            ${Array(9).fill().map((_, i) => `<div style="background: #2d3a5e; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 18px; font-size: 2rem; color: #aac8ff; font-weight: bold; box-shadow: inset 0 0 6px rgba(0,0,0,0.3);">${i%2===0?'❌':'⭕'}</div>`).join('')}
+                        </div>
+                        <p style="font-size: 0.7rem; margin-top: 12px;">⬆️ Replace with actual interactive AI game (JS events & AI logic)</p>
+                    </div>
+                </div>
+                <div class="game-integration-hint">
+                    🎯 To add real game: replace innerHTML of #game-tictactoe-container with canvas + JS.
+                </div>
+            `;
+        } 
+        else if (gameId === 'tetris') {
+            modalTitle.innerText = '🧩 TETRIS · Classic Fall Blocks 🧩';
+            gameContainer.innerHTML = `
+                <div class="placeholder-message">
+                    <p>📦 <strong>TETRIS Game Zone</strong> 📦</p>
+                    <p>Classic grid-based tetromino game with next piece, scoring, and levels.</p>
+                    <div class="code-note">
+                        🎨 Tetris mechanics: 10x20 grid, 7 shapes, rotation, collision, line clearing.
+                        <br> → Implement using canvas requestAnimationFrame, keyboard controls.
+                    </div>
+                    <div style="margin: 20px 0; background: #0b1120; border-radius: 20px; padding: 1rem; text-align: center">
+                        <span style="font-family: monospace;">[ TETRIS BOARD PREVIEW ]</span>
+                        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 12px;">
+                            <div style="background: #111a2b; padding: 8px; border-radius: 12px;">⬜️🟦🟦⬜️<br>⬜️🟦🟦⬜️</div>
+                            <div>🎮 ← → ↓ rotate:↑</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-integration-hint">
+                    🧩 Ready for full Tetris engine — paste your script and canvas inside this container.
+                </div>
+            `;
+        } 
+        else if (gameId === 'snake') {
+            modalTitle.innerText = '🐍 SNAKE · Classic Arcade 🍎';
+            gameContainer.innerHTML = `
+                <div class="placeholder-message">
+                    <p>🐍 <strong>Snake Game — Eat & Grow</strong> 🐍</p>
+                    <p>Classic snake movement, food generation, boundary collision or self-collision.<br>
+                    Use arrow keys or WASD.</p>
+                    <div class="code-note">
+                        📌 Standard grid: 20x20, snake segments, increasing length. <br>
+                        Canvas rendering loop with game over detection & score.
+                    </div>
+                    <div style="margin: 20px auto; background:#0f1422; border-radius: 20px; padding: 10px; width: fit-content;">
+                        <div style="display: grid; grid-template-columns: repeat(8, 24px); gap: 2px; background:#142032; padding: 5px; border-radius: 12px;">
+                            ${Array(64).fill().map((_, idx) => `<div style="width: 24px; height: 24px; background: ${Math.floor(idx/8)===3 && idx%8===4? '#4caf50' : (idx%8===2 && Math.floor(idx/8)===2)? '#f44336' : '#1f2a44'}; border-radius: 4px;"></div>`).join('')}
+                        </div>
+                        <p style="font-size:0.7rem; margin-top:8px;">⬆️ representative grid — replace with actual snake logic</p>
+                    </div>
+                </div>
+                <div class="game-integration-hint">
+                    🍎 Full snake integration: implement canvas, game loop, event handlers for smooth retro action.
+                </div>
+            `;
+        }
+        
+        gameEmbedArea.appendChild(gameContainer);
+        
+        // Additional note: provide inline style scroll & responsiveness
+        const styleFix = document.createElement('style');
+        styleFix.textContent = `
+            #gameEmbedArea .placeholder-message button, #gameEmbedArea button {
+                background: #2563eb;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 60px;
+                color: white;
+                margin-top: 6px;
+                cursor: pointer;
+                transition: 0.1s;
+            }
+            #gameEmbedArea canvas {
+                border-radius: 20px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+                background: #0f172a;
+            }
+        `;
+        gameEmbedArea.appendChild(styleFix);
+    }
+    
+    const gamePageMap = {
+        tictactoe: 'tic Tok Tic.html',
+        tetris: 'Tetris.html',
+        snake: 'snake.html'
+    };
+
+    // modal controls
+    function openGame(gameType) {
+        loadGameTemplate(gameType);
+        modal.classList.add('active');
+        // prevent body scroll
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        // optional clean up but keep
+    }
+    
+    // Event listeners for cards
+    const cards = document.querySelectorAll('.game-card');
+    cards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            const game = card.getAttribute('data-game');
+            if (game && gamePageMap[game]) {
+                window.location.href = gamePageMap[game];
+            } else if (game) {
+                openGame(game);
+            }
+        });
+    });
+    
+    closeBtn.addEventListener('click', closeModal);
+    // click outside (modal background) to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // ESC key support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+    
+    // Extra micro interaction: disable default drag images
+    window.addEventListener('dragstart', (e) => e.preventDefault());
+    
+    // Console friendly info
+    console.log('🎮 Arcade Nexus — Games Hub active. Each game modal is ready for YOUR full implementation (Tic Tac Toe AI, Tetris, Snake). Replace placeholder with actual JS game.');
+</script>
+</body>
+</html>
